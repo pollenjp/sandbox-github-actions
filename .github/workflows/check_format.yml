@@ -32,13 +32,11 @@ jobs:
           black --check ${{env.PYTHON_SOURCES}}
       - name: Run isort
         run: |
-          isort --check \
-            ${{env.PYTHON_SOURCES}}
+          isort --check ${{env.PYTHON_SOURCES}}
       - name: Run flake8
         run: |
           flake8 \
-          --statistics \
-          --count \
-          --show-source \
-          ./demo/ \
-          ./analyzes/
+            --statistics \
+            --count \
+            --show-source \
+            ${{env.PYTHON_SOURCES}}
