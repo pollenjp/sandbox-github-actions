@@ -29,7 +29,7 @@ jobs:
             isort==5.8.0
       - name: Run black
         run: |
-          black --check ./python/demo/ ./analyzes/
+          black --check ${{env.PYTHON_SOURCES}}
       - name: Run isort
         run: |
           isort --check \
