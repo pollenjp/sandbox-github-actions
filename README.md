@@ -6,3 +6,4 @@ GitHub Actions の練習用 repository
 
 - 1
 - 2
+- 3
