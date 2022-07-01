@@ -42,14 +42,3 @@ template: |
   ## Changes
 
   $CHANGES
-
-autolabeler:
-  - label: feature
-    branch:
-      - '/^feat(ure)?[/-].+/'
-  - label: bug
-    branch:
-      - '/^fix[/-].+/'
-  - label: enhancement
-    branch:
-      - '/(enhancement|improve)[/-].+/'
