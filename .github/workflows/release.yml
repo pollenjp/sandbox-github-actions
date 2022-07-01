@@ -38,3 +38,4 @@ jobs:
       - name: tag check
         run: |
           git tag ${{ steps.version.outputs.version }}
+          git push origin refs/tags/${{ steps.version.outputs.version }}
