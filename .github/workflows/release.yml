@@ -22,6 +22,22 @@ jobs:
       pull-requests: write
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: version
+        id: version
+        run: |
+          wget -O stoml https://github.com/freshautomations/stoml/releases/download/v0.7.0/stoml_linux_amd64
+          chmod +x stoml
+          version=$(./stoml pyproject.toml tool.poetry.version)
+          echo "::set-output name=version::${version}"
+
       - uses: release-drafter/release-drafter@v5
+        with:
+          version: ${{ steps.version.outputs.version }}
+          publish: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
