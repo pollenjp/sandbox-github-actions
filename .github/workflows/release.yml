@@ -34,3 +34,7 @@ jobs:
           publish: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: tag check
+        run: |
+          git tag ${{ steps.version.outputs.version }}
