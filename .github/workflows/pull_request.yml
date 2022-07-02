@@ -1,6 +1,7 @@
 name: Release Drafter (autolabeler)
 
 on:
+  workflow_dispatch:
   pull_request:
     branches:
       - main
@@ -15,11 +16,15 @@ permissions:
 jobs:
   autolabel:
     permissions:
+      contents: write
       pull-requests: write
     runs-on: ubuntu-latest
     steps:
+
       - uses: release-drafter/release-drafter@v5
         with:
-          config-name: release-drafter-autolabel.yml
+          config-name: release-drafter.yml
+          version: ${{ steps.version.outputs.version }}
+          publish: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
