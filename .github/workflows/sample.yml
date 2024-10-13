@@ -1,0 +1,29 @@
+name: Python
+on:
+  pull_request:
+defaults:
+  run:
+    shell: bash -eux -o pipefail {0}
+jobs:
+  ruff:
+    runs-on: ["ubuntu-latest"]
+    steps:
+      - name: Prepare
+        run: |
+          {
+            # ホストを汚さないため
+            echo XDG_CONFIG_HOME="${{ runner.temp }}/.config"
+            echo XDG_CACHE_HOME="${{ runner.temp }}/.cache"
+            echo XDG_DATA_HOME="${{ runner.temp }}/.local/share"
+            echo XDG_BIN_HOME="${{ runner.temp }}/.local/bin"
+          } >> "${GITHUB_ENV}"
+      - name: checkout
+        uses: actions/checkout@v4
+      - uses: ./.github/actions/easy-setup-uv
+        with:
+          version: 0.4.18
+          cache_base_path: ${{ runner.tool_cache }}
+      - name: Sample use
+        run: |
+          echo "Sample use"
+          uv --version

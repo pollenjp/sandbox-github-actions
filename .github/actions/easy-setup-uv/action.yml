@@ -1,0 +1,46 @@
+name: "Setup UV"
+description: "Install and setup UV"
+inputs:
+  version:
+    description: "Version of UV"
+    required: true
+  cache_base_path:
+    description: "Install to 'inputs.cache_base_path'/easy-setup-uv/'inputs.version'"
+    required: true
+outputs:
+  bin_path:
+    description: "Path to the bin directory of UV"
+    value: "${{ steps.check_cache.outputs.install_path }}/bin"
+runs:
+  using: "composite"
+  steps:
+    - name: Check cache
+      id: check_cache
+      shell: bash -eux -o pipefail {0}
+      run: |
+        install_path="${{ inputs.cache_base_path }}/easy-setup-uv/${{ inputs.version }}"
+        is_cached="0"
+        if [[ -d "${install_path}" ]]; then
+          is_cached="1"
+          printf "Use cache: %s\n" "${install_path}"
+        else
+          printf "Cache not found: %s\n" "${install_path}"
+        fi
+        {
+          echo "is_cached=${is_cached}"
+          echo "install_path=${install_path}"
+        } >> "$GITHUB_OUTPUT"
+    - name: Instal uv
+      shell: bash -eux -o pipefail {0}
+      if: "${{ steps.check_cache.outputs.is_cached == '0' }}"
+      run: curl -LsSf "https://astral.sh/uv/${{ inputs.version }}/install.sh" | env UV_INSTALL_DIR="${{ steps.check_cache.outputs.install_path }}" INSTALLER_NO_MODIFY_PATH=1 sh
+    - name: Add to PATH
+      shell: bash -eux -o pipefail {0}
+      run: |
+        if [[ ":${{ steps.check_cache.outputs.install_path }}/bin:" != *:"${PATH}":* ]]; then
+          echo "PATH=${{ steps.check_cache.outputs.install_path }}/bin:${PATH}" >> "$GITHUB_ENV"
+        fi
+
+        {
+          echo UV_PYTHON_INSTALL_DIR="${{ inputs.cache_base_path }}/easy-setup-uv/.local/share/uv/python"
+        } >> "$GITHUB_ENV"
