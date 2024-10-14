@@ -1,0 +1,62 @@
+name: "Setup dasel"
+description: "Install dasel"
+inputs:
+  version:
+    description: "Version of dasel"
+    required: true
+  cache_base_path:
+    description: "Pass `runner.tool_cache`. Cached to 'inputs.cache_base_path'/setup-dasel/'inputs.version'"
+    required: true
+outputs:
+  bin_path:
+    description: "Path to the bin directory"
+    value: "${{ steps.check_cache.outputs.install_path }}/bin"
+runs:
+  using: "composite"
+  steps:
+    - name: Check cache
+      id: check_cache
+      shell: bash -eux -o pipefail {0}
+      run: |
+        install_path="${{ inputs.cache_base_path }}/setup-dasel/${{ inputs.version }}"
+        is_cached="0"
+        if [[ -d "${install_path}" ]]; then
+          is_cached="1"
+          printf "Use cache: %s\n" "${install_path}"
+        else
+          printf "Cache not found: %s\n" "${install_path}"
+        fi
+        {
+          echo "is_cached=${is_cached}"
+          echo "install_path=${install_path}"
+        } >> "$GITHUB_OUTPUT"
+    - name: Instal dasel
+      shell: bash -eux -o pipefail {0}
+      if: "${{ steps.check_cache.outputs.is_cached == '0' }}"
+      run: |
+        machine_arch=$(uname -m)
+        # Rename the arch to match the binary name
+        case "${machine_arch}" in
+          x86_64)
+            binary_arch="amd64"
+            ;;
+          aarch64)
+            binary_arch="arm64"
+            ;;
+          *)
+            echo "Unsupported architecture: ${machine_arch}. Update this workflow file!" >&2
+            exit 1
+            ;;
+        esac
+
+        [[ -n "${{ steps.check_cache.outputs.install_path }}" ]] || exit 1
+        bin_path="${{ steps.check_cache.outputs.install_path }}/bin"
+        mkdir -p "${bin_path}"
+        wget -O "${bin_path}/dasel" "https://github.com/TomWright/dasel/releases/download/v${{ inputs.version }}/dasel_linux_${binary_arch}"
+        chmod +x "${bin_path}/dasel"
+    - name: Add to PATH
+      shell: bash -eux -o pipefail {0}
+      run: |
+        if [[ ":${{ steps.check_cache.outputs.install_path }}/bin:" != *:"${PATH}":* ]]; then
+          echo "PATH=${{ steps.check_cache.outputs.install_path }}/bin:${PATH}" >> "$GITHUB_ENV"
+        fi
